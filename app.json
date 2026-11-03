@@ -1,15 +1,21 @@
 {
   "expo": {
-    "name": "FitVision AI",
+    "name": "samukajr82.marombafit",
     "slug": "fitness-ai-app",
     "version": "1.0.0",
+    "scheme": "marombafit",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.samukajr82.marombafit",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.samukajr82.marombafit",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -19,7 +25,25 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
+      "output": "single",
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "bc8610ec-2662-4644-a4cc-5659d5c93b69"
+      }
+    },
+    "owner": "samukajr82",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/bc8610ec-2662-4644-a4cc-5659d5c93b69"
     }
   }
 }

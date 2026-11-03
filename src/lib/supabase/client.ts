@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { sessionStorage } from './sessionStorage';
 
 let client: SupabaseClient | undefined;
 
@@ -9,7 +10,13 @@ export function getSupabaseClient() {
     throw new Error('Configure a URL e a chave publicável do Supabase no arquivo .env.');
   }
   client ??= createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: true, detectSessionInUrl: false },
+    auth: {
+      storage: sessionStorage,
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: false,
+      flowType: 'implicit',
+    },
   });
   return client;
 }

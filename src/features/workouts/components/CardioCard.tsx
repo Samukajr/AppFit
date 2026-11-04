@@ -35,7 +35,7 @@ export function CardioCard({ exercise, logs, position, disabled, onRegister, onR
     <View style={styles.row}><View style={styles.icon}><Feather name="activity" size={22} color={colors.secondary} /></View>
       <View style={styles.grow}><Text style={styles.title}>{String(position).padStart(2, '0')} · {exercise.name}</Text>
         <Text style={styles.text}>Meta definida na ficha: {exercise.targetMinutes} min · Registrados: {total} min</Text></View></View>
-    {exercise.demonstration && <ExerciseDemoLink exerciseName={exercise.name} demonstration={exercise.demonstration} />}
+    <ExerciseDemoLink exerciseName={exercise.name} demonstration={exercise.demonstration} />
     <Text style={styles.text}>Registre o que realizou. Cardio não exige carga ou repetições.</Text>
     <View style={styles.fields}>
       <View style={styles.field}><Text style={styles.label}>Minutos (1–600)</Text><TextInput accessibilityLabel={`Minutos de ${exercise.name}`} value={minutes} onChangeText={setMinutes} editable={!disabled} keyboardType="number-pad" maxLength={3} style={styles.input} /></View>

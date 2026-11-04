@@ -151,3 +151,34 @@ test('cliente mostra erro da Edge Function e rejeita disponibilidade e sucesso i
   await assert.rejects(repo.geminiStatus(), /inválido/);
   await assert.rejects(repo.analyzeDocument(docId, true, true), /não confirmada/);
 });
+
+test('salvamento local reutiliza um identificador idempotente para evitar fichas duplicadas', async () => {
+  const calls = [];
+  const workouts = [{
+    name: 'Treino A',
+    focus: 'Pernas e empurrar',
+    exercises: [
+      { catalogId: 'squat', targetSets: 2, targetReps: 10, restSeconds: 90 },
+      { catalogId: 'push-up', targetSets: 2, targetReps: 10, restSeconds: 90 },
+    ],
+  }];
+  const repo = createAssessmentRepository({
+    async rpc(name, params) {
+      calls.push({ name, params });
+      return { data: [id], error: null };
+    },
+  }, user);
+  assert.deepEqual(await repo.saveLocalWorkoutPlan(generationId, workouts), [id]);
+  assert.deepEqual(await repo.saveLocalWorkoutPlan(generationId, workouts), [id]);
+  assert.deepEqual(calls, [
+    { name: 'create_local_workout_plan', params: {
+      p_request_id: generationId,
+      p_workouts: [{ name: 'Treino A', focus: 'Pernas e empurrar', exercises: workouts[0].exercises }],
+    } },
+    { name: 'create_local_workout_plan', params: {
+      p_request_id: generationId,
+      p_workouts: [{ name: 'Treino A', focus: 'Pernas e empurrar', exercises: workouts[0].exercises }],
+    } },
+  ]);
+  await assert.rejects(repo.saveLocalWorkoutPlan('invalid', workouts), /Identificador/);
+});

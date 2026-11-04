@@ -39,7 +39,7 @@ export function ExerciseCard({ exercise, sets, disabled, position, onRegister, o
           <Text style={styles.muted}>{exercise.targetSets} séries · {exercise.targetReps} repetições</Text></View>
         {sets.length >= exercise.targetSets && <Feather accessibilityLabel="Meta de séries atingida" name="check-circle" size={20} color={colors.primary} />}
       </View>
-      {exercise.demonstration && <ExerciseDemoLink exerciseName={exercise.name} demonstration={exercise.demonstration} />}
+      <ExerciseDemoLink exerciseName={exercise.name} demonstration={exercise.demonstration} />
       <View style={styles.progressRow}>
         {Array.from({ length: Math.min(exercise.targetSets, 10) }, (_, index) =>
           <View key={index} style={[styles.progressSegment, index < sets.length && styles.progressDone]} />)}

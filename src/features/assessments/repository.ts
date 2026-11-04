@@ -3,28 +3,16 @@ import { geminiConsentVersion } from '../../../supabase/functions/_shared/gemini
 import { parseWorkoutPlan, workoutConsentVersion, type GeneratedWorkout, type WorkoutCatalogEntry } from '../../../supabase/functions/_shared/gemini-workout.ts';
 import { parseAssessment, parseAssessments, parseDocument, parseDocuments, validateAttachment, validateFileSignature,
   type AssessmentDocument, type AssessmentInput } from './contract.ts';
-import { parseCatalog } from '../workouts/contract.ts';
+import { parseCatalog, parseCatalogWithDemonstrations } from '../workouts/contract.ts';
 import type { WorkoutGenerationRequest } from '../workouts/ai-types.ts';
+import { invokeGeminiObject } from '../../lib/supabase/invoke.ts';
 
 const uuid = (value: unknown): value is string => typeof value === 'string' &&
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
 export function createAssessmentRepository(client: SupabaseClient, userId: string) {
   async function invokeGemini(body: Record<string, unknown>, endpoint = 'analyze-assessment') {
-    const { data, error } = await client.functions.invoke(endpoint, { body });
-    if (error) {
-      let detail = error.message;
-      if ('context' in error && error.context instanceof Response) {
-        const response = await error.context.text();
-        try {
-          const value: unknown = JSON.parse(response);
-          if (value && typeof value === 'object' && 'error' in value && typeof value.error === 'string') detail = value.error;
-        } catch { detail = `${detail}. Resposta do servidor inválida.`; }
-      }
-      throw new Error(`Gemini indisponível: ${detail}`);
-    }
-    if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Resposta Gemini inválida.');
-    return data as Record<string, unknown>;
+    return invokeGeminiObject(client, endpoint, body);
   }
   return {
     async geminiStatus() {
@@ -56,6 +44,31 @@ export function createAssessmentRepository(client: SupabaseClient, userId: strin
       if (!uuid(result.generationId)) throw new Error('Identificador da proposta inválido.');
       const plan = parseWorkoutPlan(result.plan, validationCatalog, maxDays);
       return { generationId: result.generationId, plan, catalog };
+    },
+    async workoutCatalog() {
+      const [catalog, demonstrations] = await Promise.all([
+        client.from('exercise_catalog').select('id,name,muscle_group,equipment,kind').order('name').limit(200),
+        client.from('exercise_demonstrations').select('exercise_id,url,credit,license').order('exercise_id'),
+      ]);
+      if (catalog.error) throw new Error(`Catálogo indisponível: ${catalog.error.message}`);
+      if (demonstrations.error) throw new Error(`Demonstrações indisponíveis: ${demonstrations.error.message}`);
+      return parseCatalogWithDemonstrations(catalog.data, demonstrations.data);
+    },
+    async saveLocalWorkoutPlan(requestId: string, workouts: GeneratedWorkout[]) {
+      if (!uuid(requestId)) throw new Error('Identificador da sugestão inválido.');
+      const p_workouts = workouts.map((workout) => ({
+        name: workout.name,
+        focus: workout.focus,
+        exercises: workout.exercises,
+      }));
+      const { data, error } = await client.rpc('create_local_workout_plan', {
+        p_request_id: requestId, p_workouts,
+      });
+      if (error) throw new Error(`Não foi possível salvar as fichas: ${error.message}. Atualize a biblioteca antes de tentar novamente.`);
+      const ids = Array.isArray(data) ? data.filter((id: unknown): id is string => uuid(id)) : [];
+      if (!Array.isArray(data) || ids.length !== data.length || ids.length !== workouts.length ||
+          new Set(ids).size !== ids.length) throw new Error('O servidor não confirmou todas as fichas. Atualize a biblioteca antes de tentar novamente.');
+      return ids;
     },
     async saveWorkoutPlan(generationId: string, workouts: GeneratedWorkout[]) {
       if (!uuid(generationId)) throw new Error('Identificador da proposta inválido.');

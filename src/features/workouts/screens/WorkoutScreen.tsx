@@ -16,8 +16,9 @@ import { Brand } from '../../../components/Brand';
 import { ThemePicker } from '../../../components/ThemePicker';
 import { GymBackground } from '../../../components/GymBackground';
 import { AssessmentPanel } from '../../assessments/AssessmentPanel';
+import { AssistantPanel } from '../../assistant/AssistantPanel';
 
-export function WorkoutScreen() {
+export function WorkoutScreen({ initialWorkoutId }: { initialWorkoutId?: string } = {}) {
   const { colors, styles } = useThemedStyles(createStyles);
   const { client } = useAuth();
   const repository = useMemo(() => client ? createWorkoutRepository(client) : null, [client]);
@@ -33,7 +34,8 @@ export function WorkoutScreen() {
   const [startCreating, setStartCreating] = useState(false);
   const [assessmentsOpen, setAssessmentsOpen] = useState(false);
   const [assessmentBusy, setAssessmentBusy] = useState(false);
-  const selectedWorkout = useRef<string | undefined>(undefined);
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  const selectedWorkout = useRef<string | undefined>(initialWorkoutId);
   const pending = useRef(true);
   const mounted = useRef(true);
 
@@ -90,7 +92,7 @@ export function WorkoutScreen() {
     let active = true;
     async function initialize() {
       if (!repository) throw new Error('Entre novamente para carregar o treino.');
-      const data = await repository.load();
+      const data = await repository.load(selectedWorkout.current);
       if (active) { setSnapshot(data); setNeedsReload(false); }
     }
     void initialize().catch((cause: unknown) => {
@@ -162,6 +164,15 @@ export function WorkoutScreen() {
           <Text style={styles.buttonText}>{assessmentsOpen ? 'Fechar avaliações (descartar rascunho)' : 'Minhas avaliações e anamnese'}</Text>
         </Pressable>
         {assessmentsOpen && <AssessmentPanel onBusyChange={setAssessmentBusy} onPlanSaved={selectWorkout} disabled={busy} />}
+        <Pressable accessibilityRole="button" style={styles.button}
+          onPress={() => setAssistantOpen(!assistantOpen)}>
+          <Text style={styles.buttonText}>{assistantOpen ? 'Fechar guia local' : 'Ajuda local para treino e exercícios'}</Text>
+        </Pressable>
+        {assistantOpen && <AssistantPanel onOpenLibrary={() => {
+          setAssistantOpen(false);
+          setStartCreating(false);
+          setLibraryOpen(true);
+        }} />}
         <View style={styles.hero}>
           <Text style={styles.eyebrow}>FOCO NO QUE TE MOVE</Text>
           <Text style={styles.heading}>Sua melhor versão.{'\n'}<Text style={styles.accent}>Uma série de cada vez.</Text></Text>

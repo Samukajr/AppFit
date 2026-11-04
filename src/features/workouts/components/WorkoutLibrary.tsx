@@ -260,7 +260,7 @@ export function WorkoutLibrary({ repository, disabled, activeId, startCreating =
         const selected = drafts.some((draft) => draft.catalogId === entry.id);
         return <View key={entry.id} style={styles.catalogRow}>
           <View style={styles.grow}><Text style={styles.name}>{entry.name}</Text><Text style={styles.caption}>{exerciseGroupLabels[entry.muscleGroup] ?? entry.muscleGroup} · {entry.equipment}</Text>
-            {entry.demonstration && <ExerciseDemoLink exerciseName={entry.name} demonstration={entry.demonstration} />}
+            <ExerciseDemoLink exerciseName={entry.name} demonstration={entry.demonstration} />
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel={`${selected ? 'Remover' : 'Adicionar'} ${entry.name} ${selected ? 'da' : 'à'} ficha`}
             disabled={blocked || (!selected && drafts.length >= 30)} onPress={() => {
@@ -281,7 +281,7 @@ export function WorkoutLibrary({ repository, disabled, activeId, startCreating =
           : [{ key: 'targetSets', label: 'Séries (1–100)' }, { key: 'targetReps', label: 'Repetições (1–1000)' }, { key: 'restSeconds', label: 'Descanso (5–600 s)' }];
         return <View key={draft.catalogId} style={styles.draft}>
           <Text style={styles.name}>{index + 1}. {entry.name}</Text>
-          {entry.demonstration && <ExerciseDemoLink exerciseName={entry.name} demonstration={entry.demonstration} />}
+          <ExerciseDemoLink exerciseName={entry.name} demonstration={entry.demonstration} />
           <View style={styles.fields}>{fields.map((field) => <View key={field.key} style={styles.field}>
             <Text style={styles.caption}>{field.label}</Text>
             <TextInput accessibilityLabel={`${field.label} para ${entry.name}`} value={draft[field.key]} keyboardType="number-pad"

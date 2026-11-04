@@ -4,17 +4,17 @@ Base mobile Expo SDK 57 + TypeScript para treinos, nutricao e avaliacoes.
 
 ## Acesso online para testes
 
-Versao web publicada em 29/10/2026 no EAS Hosting:
+Versao web publicada em 03/11/2026 no EAS Hosting (login com senha):
 https://marombafit-samukajr82.expo.app/login
 
 Abre no navegador do computador, Android e iPhone sem depender do servidor
 local ou de instalacao nativa. O codigo atual usa e-mail e senha; cadastros
 podem exigir uma confirmacao inicial por e-mail, conforme a configuracao do
 Supabase. Contas existentes que usavam link de acesso devem usar "Esqueci
-minha senha" uma vez para criar uma senha. A versao hospedada ainda precisa
-ser republicada para receber essa mudanca; a validacao automatizada da versao
-publicada usou magic link gerado administrativamente para uma conta
-descartavel, sem envio de e-mail.
+minha senha" uma vez para criar uma senha. A publicacao de 03/11 confirmou as
+telas de acesso, cadastro e recuperacao, alem do bundle publicado; nao validou
+entrega de e-mail real. A apresentacao inicial e o assistente descritos abaixo
+sao alteracoes locais posteriores e ainda precisam de publicacao.
 
 A interface publica exige autenticacao para os dados de treino/avaliacao.
 Nao e uma publicacao nas lojas nem um APK/IPA. EAS Hosting possui cotas;
@@ -39,6 +39,44 @@ Nao compartilhe URLs efemeras de cada deploy como endereco de login:
 somente o callback do alias estavel esta autorizado.
 
 ## Interface
+
+### Fluxo inicial do aluno e assistente (implementacao local)
+
+No primeiro acesso sem uma apresentacao concluida, o app oferece um questionario
+opcional de objetivo, experiencia, dias, duracao, equipamentos e limitacoes.
+Contas existentes tambem recebem esta apresentacao uma vez. E possivel pular
+e montar uma ficha manual. O estado `completed` ou `skipped` fica privado no
+Supabase, por aluno, e so e mostrado como concluido apos confirmacao do servidor.
+
+O questionario reutiliza Avaliacoes e Anamnese, sem exigir exames ou medidas.
+Com consentimento especifico, o objetivo e a rotina sao armazenados no Supabase.
+O app monta uma sugestao deterministica no proprio aparelho usando o catalogo
+localmente consultado, sem enviar a avaliacao a um modelo generativo. Limitacoes,
+reabilitacao ou orientacoes profissionais interrompem a sugestao automatica e
+pedem avaliacao profissional. O aluno revisa e confirma antes de salvar as fichas
+em uma operacao atomica; a biblioteca permite edita-las depois.
+
+O painel inclui um guia local, que nao e uma IA conversacional. Ele oferece
+orientacoes gerais de seguranca, acesso a fichas e demonstracoes. Sem video
+cadastrado, **Buscar execucao no YouTube** abre uma busca externa pelo nome do
+exercicio; os resultados nao sao revisados pelo app. O YouTube so recebe esse
+nome quando o aluno abre a busca. Nao baixamos nem copiamos videos.
+
+A IA generativa externa permanece desativada por decisao do responsavel. As
+funcoes Gemini existentes continuam protegidas por configuracao de servico pago,
+revisao de privacidade e consentimentos especificos; nao ativar a cota gratuita
+para mensagens ou dados de alunos. Nenhuma migracao, funcao, politica publica ou
+versao web desta etapa foi aplicada ou publicada automaticamente.
+
+Antes de publicar este fluxo:
+
+1. Aplicar, em ordem, as migracoes existentes e
+   `supabase/migrations/202611030001_student_onboarding.sql`. Ela cria o estado
+   privado da apresentacao e a funcao atomica de salvamento das sugestoes locais.
+2. Atualizar a politica publica a partir de `public-site/privacy.html`; o
+   arquivo local nao publica a politica automaticamente.
+3. Homologar com dados sinteticos e conta descartavel. Nao aplicar migracoes,
+   publicar a politica ou enviar uma versao web sem autorizacao.
 
 Identidade visual MAROMBAFIT com temas claro e escuro, acentos azuis/lilas sem verde, acesso por
 e-mail e senha com cadastro e recuperacao de senha, e painel de treino mobile-first. As barras de progresso usam a meta de
